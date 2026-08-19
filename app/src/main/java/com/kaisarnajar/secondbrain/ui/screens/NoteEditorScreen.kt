@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,13 +39,16 @@ fun NoteEditorScreen(
     viewModel: NotesViewModel,
     onNavigateBack: () -> Unit
 ) {
+    val isNewNote = noteId == null || noteId <= 0L
+    var isEditing by remember { mutableStateOf(isNewNote) }
+
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     var isLoaded by remember { mutableStateOf(false) }
 
     LaunchedEffect(noteId) {
-        if (noteId != null && noteId > 0 && !isLoaded) {
-            val existingNote = viewModel.getNoteById(noteId)
+        if (!isNewNote && !isLoaded) {
+            val existingNote = viewModel.getNoteById(noteId!!)
             if (existingNote != null) {
                 title = existingNote.title
                 content = existingNote.content
@@ -54,12 +58,16 @@ fun NoteEditorScreen(
     }
 
     val handleSave = {
-        viewModel.saveNote(
-            id = noteId ?: 0L,
-            title = title,
-            content = content,
-            onComplete = onNavigateBack
-        )
+        if (isEditing) {
+            viewModel.saveNote(
+                id = noteId ?: 0L,
+                title = title,
+                content = content,
+                onComplete = onNavigateBack
+            )
+        } else {
+            onNavigateBack()
+        }
     }
 
     Scaffold(
@@ -67,7 +75,11 @@ fun NoteEditorScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (noteId != null && noteId > 0) "Edit Note" else "New Note",
+                        text = when {
+                            isNewNote -> "New Note"
+                            isEditing -> "Edit Note"
+                            else -> "View Note"
+                        },
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -80,12 +92,22 @@ fun NoteEditorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { handleSave() }) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Save Note",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    if (isEditing) {
+                        IconButton(onClick = { handleSave() }) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Save Note",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = { isEditing = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Note",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -103,7 +125,8 @@ fun NoteEditorScreen(
             // Title Input
             OutlinedTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { if (isEditing) title = it },
+                readOnly = !isEditing,
                 placeholder = {
                     Text(
                         text = "Title",
@@ -117,7 +140,8 @@ fun NoteEditorScreen(
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent
+                    unfocusedBorderColor = Color.Transparent,
+                    readOnlyBorderColor = Color.Transparent
                 )
             )
 
@@ -126,10 +150,11 @@ fun NoteEditorScreen(
             // Content Input
             OutlinedTextField(
                 value = content,
-                onValueChange = { content = it },
+                onValueChange = { if (isEditing) content = it },
+                readOnly = !isEditing,
                 placeholder = {
                     Text(
-                        text = "Start typing your note here...",
+                        text = if (isEditing) "Start typing your note here..." else "No content",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.outline
                     )
@@ -140,9 +165,11 @@ fun NoteEditorScreen(
                     .weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent
+                    unfocusedBorderColor = Color.Transparent,
+                    readOnlyBorderColor = Color.Transparent
                 )
             )
         }
     }
 }
+
