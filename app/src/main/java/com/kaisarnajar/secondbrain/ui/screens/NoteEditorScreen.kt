@@ -141,7 +141,7 @@ fun NoteEditorScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    readOnlyBorderColor = Color.Transparent
+                    disabledBorderColor = Color.Transparent
                 )
             )
 
@@ -166,7 +166,7 @@ fun NoteEditorScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    readOnlyBorderColor = Color.Transparent
+                    disabledBorderColor = Color.Transparent
                 )
             )
         }
