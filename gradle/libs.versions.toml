@@ -13,8 +13,10 @@ hilt = "2.51.1"
 hiltNavigationCompose = "1.2.0"
 ksp = "2.0.21-1.0.25"
 coroutines = "1.9.0"
+navigationCompose = "2.8.4"
 
 [libraries]
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

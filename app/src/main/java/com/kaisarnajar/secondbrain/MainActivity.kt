@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.kaisarnajar.secondbrain.ui.screens.HomeScreen
+import com.kaisarnajar.secondbrain.ui.navigation.SecondBrainNavGraph
 import com.kaisarnajar.secondbrain.ui.theme.SecondBrainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -15,8 +15,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SecondBrainTheme {
-                HomeScreen()
+                SecondBrainNavGraph()
             }
         }
     }
 }
+
