@@ -36,11 +36,12 @@ import com.kaisarnajar.secondbrain.viewmodel.NotesViewModel
 @Composable
 fun NoteEditorScreen(
     noteId: Long?,
+    initialIsEditing: Boolean = false,
     viewModel: NotesViewModel,
     onNavigateBack: () -> Unit
 ) {
     val isNewNote = noteId == null || noteId <= 0L
-    var isEditing by remember { mutableStateOf(isNewNote) }
+    var isEditing by remember { mutableStateOf(isNewNote || initialIsEditing) }
 
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
@@ -97,14 +98,6 @@ fun NoteEditorScreen(
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = "Save Note",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    } else {
-                        IconButton(onClick = { isEditing = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Note",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
