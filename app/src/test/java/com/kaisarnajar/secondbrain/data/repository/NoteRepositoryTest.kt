@@ -52,7 +52,18 @@ class NoteRepositoryTest {
         val notes = repository.getAllNotes().first()
         assertEquals(2, notes.size)
     }
+
+    @Test
+    fun searchNotes(): Unit = runBlocking {
+        repository.insertNote(NoteEntity(id = 1L, title = "Kotlin Coroutines", content = "Flow and StateFlow"))
+        repository.insertNote(NoteEntity(id = 2L, title = "Room Database", content = "SQLite local storage"))
+
+        val searchResults = repository.searchNotes("Coroutines").first()
+        assertEquals(1, searchResults.size)
+        assertEquals("Kotlin Coroutines", searchResults[0].title)
+    }
 }
+
 
 private class FakeNoteDao : NoteDao {
     private val notesMap = mutableMapOf<Long, NoteEntity>()

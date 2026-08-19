@@ -84,4 +84,41 @@ class NotesViewModel @Inject constructor(
     suspend fun getNoteById(id: Long): NoteEntity? {
         return repository.getNoteById(id)
     }
+
+    fun addMockData() {
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            val mockNotes = listOf(
+                NoteEntity(
+                    title = "🧠 Second Brain Architecture",
+                    content = "Second Brain is built with modern Android development standards (MAD): Jetpack Compose for UI, Hilt for DI, Room DB for local persistence, and Coroutines/Flow for reactive streaming. Everything runs 100% offline & private by design.",
+                    timestamp = now - (1000 * 60 * 60 * 24 * 3)
+                ),
+                NoteEntity(
+                    title = "⚡ Local RAG & Vector Search Ideas",
+                    content = "Retrieval-Augmented Generation (RAG) works by converting notes into text embeddings. When a user asks a question, we compute the question vector, retrieve top-K relevant chunks via cosine similarity, and synthesize an accurate answer on-device.",
+                    timestamp = now - (1000 * 60 * 60 * 24 * 2)
+                ),
+                NoteEntity(
+                    title = "📚 Book Highlights - Deep Work",
+                    content = "1. Deep work is essential to wring maximum value out of your intellectual capacity.\n2. High-Quality Work Produced = (Time Spent) x (Intensity of Focus).\n3. Embrace focus and minimize constant digital distractions.",
+                    timestamp = now - (1000 * 60 * 60 * 24 * 1)
+                ),
+                NoteEntity(
+                    title = "🛒 Weekend Tech Shopping List",
+                    content = "- Ergonomic Mechanical Keyboard\n- High Precision Wireless Mouse\n- 4K External Monitor Stand\n- USB-C Multi-port Hub",
+                    timestamp = now - (1000 * 60 * 60 * 5)
+                ),
+                NoteEntity(
+                    title = "💡 Product Ideas & Roadmap",
+                    content = "- Support Markdown preview and syntax highlighting in note editor.\n- Integrate local ML Kit text recognition for photo imports.\n- Export notes as JSON / Markdown backup archive.",
+                    timestamp = now
+                )
+            )
+            mockNotes.forEach { note ->
+                repository.insertNote(note)
+            }
+        }
+    }
 }
+
