@@ -83,6 +83,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
+    // ML Kit Text Recognition
+    implementation(libs.mlkit.text.recognition)
+
+
     // Testing & Tooling
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

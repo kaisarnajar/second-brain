@@ -58,15 +58,32 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesScreen(
     viewModel: NotesViewModel,
     onNavigateToEditor: (Long?, Boolean) -> Unit
 ) {
+    val context = LocalContext.current
     val notes by viewModel.notes.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val isImporting by viewModel.isImporting.collectAsState()
     var noteToDelete by remember { mutableStateOf<NoteEntity?>(null) }
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { viewModel.importFile(context, it) }
+    }
 
     Scaffold(
         topBar = {
@@ -88,6 +105,28 @@ fun NotesScreen(
                     }
                 },
                 actions = {
+                    TextButton(
+                        onClick = {
+                            filePickerLauncher.launch(
+                                arrayOf(
+                                    "text/*",
+                                    "application/pdf",
+                                    "image/*"
+                                )
+                            )
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FileOpen,
+                            contentDescription = "Import File",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Import",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                     TextButton(onClick = { viewModel.addMockData() }) {
                         Icon(
                             imageVector = Icons.Default.PlaylistAdd,
@@ -191,17 +230,42 @@ fun NotesScreen(
                         )
                         if (searchQuery.isBlank()) {
                             Spacer(modifier = Modifier.height(16.dp))
-                            OutlinedButton(
-                                onClick = { viewModel.addMockData() },
-                                shape = RoundedCornerShape(12.dp)
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.PlaylistAdd,
-                                    contentDescription = "Add Test Data",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Add Sample Notes")
+                                OutlinedButton(
+                                    onClick = {
+                                        filePickerLauncher.launch(
+                                            arrayOf(
+                                                "text/*",
+                                                "application/pdf",
+                                                "image/*"
+                                            )
+                                        )
+                                    },
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.FileOpen,
+                                        contentDescription = "Import File",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Import File")
+                                }
+
+                                OutlinedButton(
+                                    onClick = { viewModel.addMockData() },
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlaylistAdd,
+                                        contentDescription = "Add Test Data",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Sample Notes")
+                                }
                             }
                         }
                     }
@@ -228,7 +292,34 @@ fun NotesScreen(
         }
     }
 
+    // Loading Dialog when importing
+    if (isImporting) {
+        Dialog(
+            onDismissRequest = {},
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        ) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Row(
+                    modifier = Modifier.padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(36.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Extracting text from file...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+
     // Delete Dialog
+
     noteToDelete?.let { note ->
         AlertDialog(
             onDismissRequest = { noteToDelete = null },

@@ -24,6 +24,9 @@ class NotesViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _isImporting = MutableStateFlow(false)
+    val isImporting: StateFlow<Boolean> = _isImporting.asStateFlow()
+
     val notes: StateFlow<List<NoteEntity>> = _searchQuery
         .flatMapLatest { query ->
             if (query.isBlank()) {
@@ -41,6 +44,33 @@ class NotesViewModel @Inject constructor(
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
+
+    fun importFile(context: Context, uri: Uri, onResult: ((Boolean) -> Unit)? = null) {
+        viewModelScope.launch {
+            _isImporting.value = true
+            try {
+                val parsed = com.kaisarnajar.secondbrain.util.DocumentParser.parseDocument(context, uri)
+                if (parsed.content.isNotBlank() || parsed.title.isNotBlank()) {
+                    repository.insertNote(
+                        NoteEntity(
+                            title = parsed.title,
+                            content = parsed.content,
+                            timestamp = System.currentTimeMillis()
+                        )
+                    )
+                    onResult?.invoke(true)
+                } else {
+                    onResult?.invoke(false)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onResult?.invoke(false)
+            } finally {
+                _isImporting.value = false
+            }
+        }
+    }
+
 
     fun deleteNote(id: Long) {
         viewModelScope.launch {
